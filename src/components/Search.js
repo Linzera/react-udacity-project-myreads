@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Debounce } from "react-throttle";
 import * as BooksAPI from "../BooksAPI";
 import Book from "./Book";
-import { bool } from "prop-types";
 
 export default class Search extends React.Component {
   state = {
@@ -44,10 +44,19 @@ export default class Search extends React.Component {
   };
 
   renderBooks = () => {
-    const { searchResult } = this.state;
+    const { searchResult, books, search } = this.state;
 
-    return searchResult.map(book => (
-      <li key={book.id}>
+    if (search.length === 0) {
+      return <h2>Digite algo e pesquise seus livros!</h2>;
+    }
+
+    const searchBooks = books.filter(el =>
+      el.title.toLowerCase().includes(search)
+    );
+    const result = [...searchResult, ...searchBooks];
+
+    return result.map(book => (
+      <li key={book.id + book.title}>
         <Book
           book={book}
           onPress={(value, book) => this.onPress(value, book)}
@@ -68,12 +77,13 @@ export default class Search extends React.Component {
             Close
           </Link>
           <div className="search-books-input-wrapper">
-            <input
-              value={this.state.search}
-              onChange={e => this.handleSearch(e)}
-              type="text"
-              placeholder="Search by title or author"
-            />
+            <Debounce time="400" handler="onChange">
+              <input
+                onChange={e => this.handleSearch(e)}
+                type="text"
+                placeholder="Search by title or author"
+              />
+            </Debounce>
           </div>
         </div>
         <div className="search-books-results">
