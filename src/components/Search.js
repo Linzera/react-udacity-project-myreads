@@ -4,7 +4,7 @@ import { Debounce } from "react-throttle";
 import * as BooksAPI from "../BooksAPI";
 import Book from "./Book";
 
-export default class Search extends React.Component {
+class Search extends React.Component {
   state = {
     search: "",
     searchResult: [],
@@ -21,6 +21,18 @@ export default class Search extends React.Component {
         this.props.handleBookStateChange(value, book);
       }
     );
+  };
+
+  getBooks = () => {
+    const { searchResult } = this.state;
+    const { books } = this.props;
+
+    return searchResult.reduce((accumulator, item) => {
+      const isBookInShelf = books.find(book => book.id === item.id);
+      if (isBookInShelf) item.shelf = book.shelf;
+
+      return [...accumulator, item];
+    }, []);
   };
 
   handleSearch = e => {
@@ -44,16 +56,13 @@ export default class Search extends React.Component {
   };
 
   renderBooks = () => {
-    const { searchResult, books, search } = this.state;
+    const { search } = this.state;
 
     if (search.length === 0) {
       return <h2>Digite algo e pesquise seus livros!</h2>;
     }
 
-    const searchBooks = books.filter(el =>
-      el.title.toLowerCase().includes(search)
-    );
-    const result = [...searchResult, ...searchBooks];
+    const result = this.getBooks();
 
     return result.map(book => (
       <li key={book.id + book.title}>
@@ -93,3 +102,5 @@ export default class Search extends React.Component {
     );
   }
 }
+
+export default Search;
